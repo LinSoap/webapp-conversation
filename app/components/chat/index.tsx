@@ -130,6 +130,7 @@ const Chat: FC<IChatProps> = ({
               feedbackDisabled={feedbackDisabled}
               onFeedback={onFeedback}
               isResponding={isResponding && isLast}
+              onSend={onSend}
             />
           }
           return (

@@ -14,6 +14,8 @@ import Tooltip from '@/app/components/base/tooltip'
 import WorkflowProcess from '@/app/components/workflow/workflow-process'
 import { Markdown } from '@/app/components/base/markdown'
 import type { Emoji } from '@/types/tools'
+import { parseMessage } from './parse-header'
+import Button from '../../base/button'
 
 const OperationBtn = ({ innerContent, onClick, className }: { innerContent: React.ReactNode; onClick?: () => void; className?: string }) => (
   <div
@@ -60,6 +62,7 @@ type IAnswerProps = {
   onFeedback?: FeedbackFunc
   isResponding?: boolean
   allToolIcons?: Record<string, string | Emoji>
+  onSend?: (message: string, files: VisionFile[]) => void
 }
 
 // The component needs to maintain its own state to control whether to display input component
@@ -69,10 +72,12 @@ const Answer: FC<IAnswerProps> = ({
   onFeedback,
   isResponding,
   allToolIcons,
+  onSend = () => { },
 }) => {
   const { id, content, feedback, agent_thoughts, workflowProcess } = item
   const isAgentMode = !!agent_thoughts && agent_thoughts.length > 0
 
+  const { displayContent, message_header } = parseMessage(content || '')
   const { t } = useTranslation()
 
   /**
@@ -190,8 +195,18 @@ const Answer: FC<IAnswerProps> = ({
                 : (isAgentMode
                   ? agentModeAnswer
                   : (
-                    <Markdown content={content} />
+                    <Markdown content={displayContent} />
                   ))}
+              {message_header && message_header.length > 0
+                ? message_header.map((item, index) => (
+                  <Button
+                    key={index}
+                    onClick={() => onSend(item.suggestion, [])}
+                  >
+                    {item.suggestion}
+                  </Button>
+                ))
+                : null}
             </div>
             <div className='absolute top-[-14px] right-[-14px] flex flex-row justify-end gap-1'>
               {!feedbackDisabled && !item.feedbackDisabled && renderItemOperation()}
