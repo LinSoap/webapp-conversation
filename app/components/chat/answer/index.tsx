@@ -63,6 +63,7 @@ type IAnswerProps = {
   isResponding?: boolean
   allToolIcons?: Record<string, string | Emoji>
   onSend?: (message: string, files: VisionFile[]) => void
+  isLast: boolean
 }
 
 // The component needs to maintain its own state to control whether to display input component
@@ -73,6 +74,7 @@ const Answer: FC<IAnswerProps> = ({
   isResponding,
   allToolIcons,
   onSend = () => { },
+  isLast
 }) => {
   const { id, content, feedback, agent_thoughts, workflowProcess } = item
   const isAgentMode = !!agent_thoughts && agent_thoughts.length > 0
@@ -197,7 +199,7 @@ const Answer: FC<IAnswerProps> = ({
                   : (
                     <Markdown content={displayContent} />
                   ))}
-              {message_header && message_header.length > 0
+              {message_header && message_header.length > 0 && !isResponding && isLast
                 ? message_header.map((item, index) => (
                   <Button
                     key={index}
