@@ -603,6 +603,7 @@ const Main: FC<IMainProps> = () => {
     notify({ type: 'success', message: t('common.api.success') })
   }
 
+  //渲染侧边栏
   const renderSidebar = () => {
     if (!APP_ID || !APP_INFO || !promptConfig) return null
 

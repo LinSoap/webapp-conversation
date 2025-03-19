@@ -16,6 +16,7 @@ import { Markdown } from '@/app/components/base/markdown'
 import type { Emoji } from '@/types/tools'
 import { parseMessage } from './parse-header'
 import Button from '../../base/button'
+import classNames from 'classnames'
 
 const OperationBtn = ({ innerContent, onClick, className }: { innerContent: React.ReactNode; onClick?: () => void; className?: string }) => (
   <div
@@ -63,7 +64,8 @@ type IAnswerProps = {
   isResponding?: boolean
   allToolIcons?: Record<string, string | Emoji>
   onSend?: (message: string, files: VisionFile[]) => void
-  isLast: boolean
+  isLast: boolean,
+  nextQuestionContent: string | null
 }
 
 // The component needs to maintain its own state to control whether to display input component
@@ -74,7 +76,8 @@ const Answer: FC<IAnswerProps> = ({
   isResponding,
   allToolIcons,
   onSend = () => { },
-  isLast
+  isLast,
+  nextQuestionContent = ''
 }) => {
   const { id, content, feedback, agent_thoughts, workflowProcess } = item
   const isAgentMode = !!agent_thoughts && agent_thoughts.length > 0
@@ -199,16 +202,31 @@ const Answer: FC<IAnswerProps> = ({
                   : (
                     <Markdown content={displayContent} />
                   ))}
-              {message_header && message_header.length > 0 && !isResponding && isLast
-                ? message_header.map((item, index) => (
-                  <Button
-                    key={index}
-                    onClick={() => onSend(item.suggestion, [])}
-                  >
-                    {item.suggestion}
-                  </Button>
-                ))
-                : null}
+              {/* 使用message_header渲染推荐选项 */}
+              {message_header && message_header.length > 0 && !isResponding ? (
+                <div className="space-x-2">
+                  {message_header.map((headerItem, index) => {
+                    // 检查当前 suggestion 是否匹配 nextQuestionContent
+                    const isHighlighted = nextQuestionContent === headerItem.suggestion
+
+                    return (
+                      <Button
+                        key={index}
+                        onClick={() => onSend(headerItem.suggestion, [])}
+                        className={classNames(
+                          'inline-flex items-center px-3 py-1 text-sm',
+                          isHighlighted
+                            ? 'bg-primary-100 text-primary-600 border-primary-200'
+                            : 'bg-gray-100 text-gray-700 border-gray-200'
+                        )}
+                        disabled={!isLast}
+                      >
+                        {headerItem.suggestion}
+                      </Button>
+                    )
+                  })}
+                </div>
+              ) : null}
             </div>
             <div className='absolute top-[-14px] right-[-14px] flex flex-row justify-end gap-1'>
               {!feedbackDisabled && !item.feedbackDisabled && renderItemOperation()}

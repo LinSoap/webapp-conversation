@@ -121,18 +121,26 @@ const Chat: FC<IChatProps> = ({
     <div className={cn(!feedbackDisabled && 'px-3.5', 'h-full')}>
       {/* Chat List */}
       <div className="h-full space-y-[30px]">
-        {chatList.map((item) => {
+        {chatList.map((item, index) => {
           if (item.isAnswer) {
-            const isLast = item.id === chatList[chatList.length - 1].id
-            return <Answer
-              key={item.id}
-              item={item}
-              feedbackDisabled={feedbackDisabled}
-              onFeedback={onFeedback}
-              isResponding={isResponding && isLast}
-              onSend={onSend}
-              isLast={isLast}
-            />
+            const isLast = index === chatList.length - 1
+            // 获取下一个对话的文本（如果存在）
+            const nextQuestion = !isLast && chatList[index + 1]?.isAnswer === false
+              ? chatList[index + 1].content
+              : null
+
+            return (
+              <Answer
+                key={item.id}
+                item={item}
+                feedbackDisabled={feedbackDisabled}
+                onFeedback={onFeedback}
+                isResponding={isResponding && isLast}
+                onSend={onSend}
+                isLast={isLast}
+                nextQuestionContent={nextQuestion} // 新增 prop 传递下一个问题
+              />
+            )
           }
           return (
             <Question
@@ -140,7 +148,11 @@ const Chat: FC<IChatProps> = ({
               id={item.id}
               content={item.content}
               useCurrentUserAvatar={useCurrentUserAvatar}
-              imgSrcs={(item.message_files && item.message_files?.length > 0) ? item.message_files.map(item => item.url) : []}
+              imgSrcs={
+                item.message_files && item.message_files.length > 0
+                  ? item.message_files.map((file) => file.url)
+                  : []
+              }
             />
           )
         })}
