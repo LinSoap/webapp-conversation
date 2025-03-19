@@ -288,6 +288,7 @@ const baseFetch = (url: string, fetchOptions: any, { needAllResponseContent }: I
           // Error handler
           if (!/^(2|3)\d{2}$/.test(res.status)) {
             try {
+              console.log(res)
               const bodyJson = res.json()
               switch (res.status) {
                 case 401: {

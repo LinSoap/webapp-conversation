@@ -10,7 +10,7 @@ import Toast from '@/app/components/base/toast'
 import Sidebar from '@/app/components/sidebar'
 import ConfigSence from '@/app/components/config-scence'
 import Header from '@/app/components/header'
-import { fetchAppParams, fetchChatList, fetchConversations, generationConversationName, sendChatMessage, updateFeedback } from '@/service'
+import { deleteConversation, fetchAppParams, fetchChatList, fetchConversations, generationConversationName, sendChatMessage, updateFeedback } from '@/service'
 import type { ChatItem, ConversationItem, Feedbacktype, PromptConfig, VisionFile, VisionSettings } from '@/types/app'
 import { Resolution, TransferMethod, WorkflowRunningStatus } from '@/types/app'
 import Chat from '@/app/components/chat'
@@ -602,11 +602,36 @@ const Main: FC<IMainProps> = () => {
   const renderSidebar = () => {
     if (!APP_ID || !APP_INFO || !promptConfig)
       return null
+
+    const handleDelete = async (id: string) => {
+      try {
+        const response = await deleteConversation(id)
+        if (response) {
+
+          const conversationData = await fetchConversations()
+          const { data: conversations, error } = conversationData as { data: ConversationItem[]; error: string }
+          if (error) {
+            Toast.notify({ type: 'error', message: error })
+            throw new Error(error)
+            return
+          }
+          if (id === currConversationId) {
+            handleConversationIdChange('-1')
+          }
+          setConversationList(conversations as ConversationItem[])
+        } else {
+          Toast.notify({ type: 'error', message: t('common.api.error') })
+        }
+      } catch (error) {
+        Toast.notify({ type: 'error', message: t('common.api.error') })
+      }
+    }
     return (
       <Sidebar
         list={conversationList}
         onCurrentIdChange={handleConversationIdChange}
         currentId={currConversationId}
+        handleDelete={handleDelete}
         copyRight={APP_INFO.copyright || APP_INFO.title}
       />
     )
