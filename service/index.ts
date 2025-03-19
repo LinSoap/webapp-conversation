@@ -64,3 +64,7 @@ export const generationConversationName = async (id: string) => {
 export const deleteConversation = async (conversationId: string) => {
   return del(`conversations/${conversationId}`)
 }
+
+export const renameConversation = async (conversationId: string, name: string) => {
+  return post(`conversations/${conversationId}/name`, { body: { name } })
+}

@@ -10,7 +10,7 @@ import Toast from '@/app/components/base/toast'
 import Sidebar from '@/app/components/sidebar'
 import ConfigSence from '@/app/components/config-scence'
 import Header from '@/app/components/header'
-import { deleteConversation, fetchAppParams, fetchChatList, fetchConversations, generationConversationName, sendChatMessage, updateFeedback } from '@/service'
+import { deleteConversation, fetchAppParams, fetchChatList, fetchConversations, generationConversationName, renameConversation, sendChatMessage, updateFeedback } from '@/service'
 import type { ChatItem, ConversationItem, Feedbacktype, PromptConfig, VisionFile, VisionSettings } from '@/types/app'
 import { Resolution, TransferMethod, WorkflowRunningStatus } from '@/types/app'
 import Chat from '@/app/components/chat'
@@ -216,6 +216,17 @@ const Main: FC<IMainProps> = () => {
     return []
   }
 
+  // 获取对话列表
+  const fetchConversationList = async () => {
+    const conversationData = await fetchConversations()
+    const { data: conversations, error } = conversationData as { data: ConversationItem[]; error: string }
+    if (error) {
+      Toast.notify({ type: 'error', message: error })
+      throw new Error(error)
+    }
+    return conversations
+  }
+
   // init
   useEffect(() => {
     if (!hasSetAppConfig) {
@@ -224,18 +235,11 @@ const Main: FC<IMainProps> = () => {
     }
     (async () => {
       try {
-        const [conversationData, appParams] = await Promise.all([fetchConversations(), fetchAppParams()])
-
-        // handle current conversation id
-        const { data: conversations, error } = conversationData as { data: ConversationItem[]; error: string }
-        if (error) {
-          Toast.notify({ type: 'error', message: error })
-          throw new Error(error)
-          return
-        }
+        const conversations = await fetchConversationList()
         const _conversationId = getConversationIdFromStorage(APP_ID)
         const isNotNewConversation = conversations.some(item => item.id === _conversationId)
 
+        const appParams = await fetchAppParams()
         // fetch new conversation info
         const { user_input_form, opening_statement: introduction, file_upload, system_parameters }: any = appParams
         setLocaleOnClient(APP_INFO.default_language, true)
@@ -600,43 +604,64 @@ const Main: FC<IMainProps> = () => {
   }
 
   const renderSidebar = () => {
-    if (!APP_ID || !APP_INFO || !promptConfig)
-      return null
+    if (!APP_ID || !APP_INFO || !promptConfig) return null
+
+    const handleApiError = (error: unknown) => {
+      Toast.notify({ type: 'error', message: t('common.api.error') })
+      console.error(error)
+    }
+
+    // 更新对话列表并保持当前ID
+    const updateConversations = async () => {
+      try {
+        const conversations = await fetchConversationList()
+        setConversationList(conversations as ConversationItem[])
+      } catch (error) {
+        handleApiError(error)
+      }
+    }
+
+    const handleRename = async (id: string, name: string) => {
+      try {
+        const response = await renameConversation(id, name)
+        if (response) {
+          await updateConversations()
+          setExistConversationInfo({
+            name: name,
+            introduction: currConversationInfo?.introduction || '',
+          })
+        } else {
+          Toast.notify({ type: 'error', message: t('common.api.error') })
+        }
+      } catch (error) {
+        handleApiError(error)
+      }
+    }
 
     const handleDelete = async (id: string) => {
       try {
         const response = await deleteConversation(id)
         if (response) {
-
-          const conversationData = await fetchConversations()
-          const { data: conversations, error } = conversationData as { data: ConversationItem[]; error: string }
-          if (error) {
-            Toast.notify({ type: 'error', message: error })
-            throw new Error(error)
-            return
-          }
-          if (id === currConversationId) {
-            handleConversationIdChange('-1')
-          }
-          setConversationList(conversations as ConversationItem[])
+          await updateConversations()
         } else {
           Toast.notify({ type: 'error', message: t('common.api.error') })
         }
       } catch (error) {
-        Toast.notify({ type: 'error', message: t('common.api.error') })
+        handleApiError(error)
       }
     }
+
     return (
       <Sidebar
         list={conversationList}
         onCurrentIdChange={handleConversationIdChange}
         currentId={currConversationId}
         handleDelete={handleDelete}
+        handleRename={handleRename}
         copyRight={APP_INFO.copyright || APP_INFO.title}
       />
     )
   }
-
   if (appUnavailable)
     return <AppUnavailable isUnknownReason={isUnknownReason} errMessage={!hasSetAppConfig ? 'Please set APP_ID and API_KEY in config/index.tsx' : ''} />
 
