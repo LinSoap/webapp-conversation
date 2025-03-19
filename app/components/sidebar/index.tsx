@@ -109,7 +109,9 @@ const Sidebar: FC<ISidebarProps> = ({
                     autoFocus
                   />
                 ) : (
-                  <span className="truncate">{item.name}</span>
+                  <span className="truncate" title={item.name}>
+                    {item.name.length > 9 ? item.name.substring(0, 9) + '...' : item.name}
+                  </span>
                 )}
               </div>
               <div className="flex items-center">
