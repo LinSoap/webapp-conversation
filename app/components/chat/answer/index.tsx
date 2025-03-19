@@ -82,7 +82,7 @@ const Answer: FC<IAnswerProps> = ({
   const { id, content, feedback, agent_thoughts, workflowProcess } = item
   const isAgentMode = !!agent_thoughts && agent_thoughts.length > 0
 
-  const { displayContent, message_header } = parseMessage(content || '')
+  const { displayContent, message_header, think } = parseMessage(content || '')
   const { t } = useTranslation()
 
   /**
@@ -157,8 +157,6 @@ const Answer: FC<IAnswerProps> = ({
           {item.thought && (
             <Markdown content={item.thought} />
           )}
-          {/* {item.tool} */}
-          {/* perhaps not use tool */}
           {!!item.tool && (
             <Thought
               thought={item}
@@ -166,7 +164,6 @@ const Answer: FC<IAnswerProps> = ({
               isFinished={!!item.observation || !isResponding}
             />
           )}
-
           {getImgs(item.message_files).length > 0 && (
             <ImageGallery srcs={getImgs(item.message_files).map(item => item.url)} />
           )}
@@ -191,6 +188,43 @@ const Answer: FC<IAnswerProps> = ({
               {workflowProcess && (
                 <WorkflowProcess data={workflowProcess} hideInfo />
               )}
+
+              {/* 美化后的 Think 部分 */}
+              {think && (
+                <details
+                  style={{
+                    color: '#4B5E6D',
+                    backgroundColor: '#F9FAFB',
+                    padding: '12px',
+                    borderRadius: '6px',
+                    border: '1px solid #E5E7EB',
+                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+                    marginBottom: '12px'
+                  }}
+                  open
+                >
+                  <summary
+                    style={{
+                      cursor: 'pointer',
+                      fontWeight: 500,
+                      color: '#374151'
+                    }}
+                  >
+                    {think.summary}
+                    {!think.isComplete && isResponding && (
+                      <span className="inline-flex ml-2">
+                        <LoadingAnim type='text' />
+                      </span>
+                    )}
+                  </summary>
+                  {think.content && (
+                    <div style={{ marginTop: '8px' }}>
+                      <Markdown content={think.content} />
+                    </div>
+                  )}
+                </details>
+              )}
+
               {(isResponding && (isAgentMode ? (!content && (agent_thoughts || []).filter(item => !!item.thought || !!item.tool).length === 0) : !content))
                 ? (
                   <div className='flex items-center justify-center w-6 h-5'>
@@ -202,13 +236,10 @@ const Answer: FC<IAnswerProps> = ({
                   : (
                     <Markdown content={displayContent} />
                   ))}
-              {/* 使用message_header渲染推荐选项 */}
               {message_header && message_header.length > 0 && !isResponding ? (
                 <div className="space-x-2">
                   {message_header.map((headerItem, index) => {
-                    // 检查当前 suggestion 是否匹配 nextQuestionContent
                     const isHighlighted = nextQuestionContent === headerItem.suggestion
-
                     return (
                       <Button
                         key={index}
@@ -230,7 +261,6 @@ const Answer: FC<IAnswerProps> = ({
             </div>
             <div className='absolute top-[-14px] right-[-14px] flex flex-row justify-end gap-1'>
               {!feedbackDisabled && !item.feedbackDisabled && renderItemOperation()}
-              {/* User feedback must be displayed */}
               {!feedbackDisabled && renderFeedbackRating(feedback?.rating)}
             </div>
           </div>

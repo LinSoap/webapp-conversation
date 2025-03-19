@@ -4,17 +4,19 @@ export type MessageHeader = {
   [key: string]: any // 支持其他可能的字段
 }
 
-
-// 解析 <messageHeader> 和内容
 export const parseMessage = (rawContent: string) => {
   const headerRegex = /<messageHeader>\s*([\s\S]*?)\s*<\/messageHeader>/
-  const match = rawContent.match(headerRegex)
+  const thinkRegexComplete = /<details[^>]*>\s*<summary>\s*([^<]*)<\/summary>([\s\S]*?)<\/details>/
+  const thinkRegexPartial = /<details[^>]*>\s*<summary>\s*([^<]*)<\/summary>([\s\S]*)$/ // 未闭合的 think
 
   let message_header: MessageHeader[] = []
+  let think: { summary: string; content: string; isComplete: boolean } | null = null
   let displayContent = rawContent
 
-  if (match) {
-    const headerContent = match[1].trim()
+  // 解析 messageHeader
+  const headerMatch = rawContent.match(headerRegex)
+  if (headerMatch) {
+    const headerContent = headerMatch[1].trim()
     try {
       message_header = JSON.parse(headerContent)
       if (!Array.isArray(message_header)) {
@@ -32,8 +34,30 @@ export const parseMessage = (rawContent: string) => {
       console.error('Failed to parse messageHeader as JSON:', error)
       message_header = []
     }
-    displayContent = rawContent.replace(headerRegex, '').trim()
+    displayContent = displayContent.replace(headerRegex, '').trim()
   }
 
-  return { displayContent, message_header }
+  // 首先尝试匹配完整的 think
+  const thinkMatchComplete = rawContent.match(thinkRegexComplete)
+  if (thinkMatchComplete) {
+    think = {
+      summary: thinkMatchComplete[1].trim(),
+      content: thinkMatchComplete[2].trim(),
+      isComplete: true
+    }
+    displayContent = displayContent.replace(thinkRegexComplete, '').trim()
+  } else {
+    // 如果没有完整的 think，尝试匹配未闭合的 think
+    const thinkMatchPartial = rawContent.match(thinkRegexPartial)
+    if (thinkMatchPartial) {
+      think = {
+        summary: thinkMatchPartial[1].trim(),
+        content: thinkMatchPartial[2].trim(),
+        isComplete: false
+      }
+      displayContent = displayContent.replace(thinkRegexPartial, '').trim()
+    }
+  }
+
+  return { displayContent, message_header, think }
 }
