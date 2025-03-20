@@ -124,7 +124,6 @@ const Chat: FC<IChatProps> = ({
         {chatList.map((item, index) => {
           if (item.isAnswer) {
             const isLast = index === chatList.length - 1
-            // 获取下一个对话的文本（如果存在）
             const nextQuestion = !isLast && chatList[index + 1]?.isAnswer === false
               ? chatList[index + 1].content
               : null
@@ -138,7 +137,7 @@ const Chat: FC<IChatProps> = ({
                 isResponding={isResponding && isLast}
                 onSend={onSend}
                 isLast={isLast}
-                nextQuestionContent={nextQuestion} // 新增 prop 传递下一个问题
+                nextQuestionContent={nextQuestion}
               />
             )
           }
@@ -160,19 +159,19 @@ const Chat: FC<IChatProps> = ({
       {
         !isHideSendInput && (
           <div className={cn(!feedbackDisabled && '!left-3.5 !right-3.5', 'absolute z-10 bottom-0 left-0 right-0')}>
-            <div className='p-[5.5px] max-h-[150px] bg-white border-[1.5px] border-gray-200 rounded-xl overflow-y-auto'>
+            <div className="p-[5.5px] max-h-[150px] bg-white border-[1.5px] border-gray-200 rounded-xl overflow-y-auto shadow-md">
               {
                 visionConfig?.enabled && (
                   <>
-                    <div className='absolute bottom-2 left-2 flex items-center'>
+                    <div className="absolute bottom-2 left-2 flex items-center">
                       <ChatImageUploader
                         settings={visionConfig}
                         onUpload={onUpload}
                         disabled={files.length >= visionConfig.number_limits}
                       />
-                      <div className='mx-1 w-[1px] h-4 bg-black/5' />
+                      <div className="mx-1 w-[1px] h-4 bg-black/5" />
                     </div>
-                    <div className='pl-[52px]'>
+                    <div className="pl-[52px]">
                       <ImageList
                         list={files}
                         onRemove={onRemove}
@@ -186,27 +185,53 @@ const Chat: FC<IChatProps> = ({
               }
               <Textarea
                 className={`
-                  block w-full px-2 pr-[118px] py-[7px] leading-5 max-h-none text-sm text-gray-700 outline-none appearance-none resize-none
-                  ${visionConfig?.enabled && 'pl-12'}
-                `}
+                block w-full px-4 py-2 pr-[130px] text-sm text-gray-800 bg-white rounded-lg
+                border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+                transition-all duration-200 placeholder-gray-400 resize-none
+                ${visionConfig?.enabled && 'pl-14'}
+              `}
                 value={query}
                 onChange={handleContentChange}
                 onKeyUp={handleKeyUp}
                 onKeyDown={handleKeyDown}
                 autoSize
+                placeholder="请输入您的问题..."
               />
-              <div className="absolute bottom-2 right-2 flex items-center h-8">
-                <div className={`${s.count} mr-4 h-5 leading-5 text-sm bg-gray-50 text-gray-500`}>{query.trim().length}</div>
+              <div className="absolute bottom-2 right-2 flex items-center h-8 space-x-3">
+                <div
+                  className={`${s.count} h-5 px-2 py-0.5 text-sm text-gray-600 bg-gray-100 rounded-full shadow-inner`}
+                >
+                  {query.trim().length}
+                </div>
                 <Tooltip
-                  selector='send-tip'
+                  selector="send-tip"
                   htmlContent={
-                    <div>
-                      <div>{t('common.operation.send')} Enter</div>
-                      <div>{t('common.operation.lineBreak')} Shift Enter</div>
+                    <div className="text-sm text-gray-700">
+                      <div>Enter键 发送</div>
+                      <div>Shift+Enter键 换行</div>
                     </div>
                   }
                 >
-                  <div className={`${s.sendBtn} w-8 h-8 cursor-pointer rounded-md`} onClick={handleSend}></div>
+                  <div
+                    className={`${s.sendBtn} w-8 h-8 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-md cursor-pointer transition-all duration-200 hover:scale-105`}
+                    onClick={handleSend}
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M2 8H14M14 8L10 4M14 8L10 12"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
                 </Tooltip>
               </div>
             </div>
@@ -214,7 +239,7 @@ const Chat: FC<IChatProps> = ({
         )
       }
     </div>
-  )
+  );
 }
 
 export default React.memo(Chat)
