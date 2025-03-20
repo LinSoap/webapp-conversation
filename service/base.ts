@@ -211,6 +211,7 @@ const handleStream = (
             }
             else if (bufferObj.event === 'message_end') {
               onMessageEnd?.(bufferObj as MessageEnd)
+              onCompleted?.(true)
             }
             else if (bufferObj.event === 'message_replace') {
               onMessageReplace?.(bufferObj as MessageReplace)
