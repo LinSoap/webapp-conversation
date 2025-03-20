@@ -2,7 +2,7 @@
 import type { FC } from 'react'
 import React from 'react'
 import { HandThumbDownIcon, HandThumbUpIcon } from '@heroicons/react/24/outline'
-import { useTranslation } from 'react-i18next'
+import cn from 'classnames'
 import LoadingAnim from '../loading-anim'
 import type { FeedbackFunc } from '../type'
 import s from '../style.module.css'
@@ -18,6 +18,8 @@ import { parseMessage } from './parse-header'
 import Button from '../../base/button'
 import classNames from 'classnames'
 import Toast from '../../base/toast'
+import CheckCircle from '@/app/components/base/icons/solid/general/check-circle'
+import Loading02 from '../../base/icons/line/loading-02'
 
 const OperationBtn = ({ innerContent, onClick, className }: { innerContent: React.ReactNode; onClick?: () => void; className?: string }) => (
   <div
@@ -218,38 +220,28 @@ const Answer: FC<IAnswerProps> = ({
 
               {/* 美化后的 Think 部分 */}
               {think && (
-                <details
-                  style={{
-                    color: '#4B5E6D',
-                    backgroundColor: '#F9FAFB',
-                    padding: '12px',
-                    borderRadius: '6px',
-                    border: '1px solid #E5E7EB',
-                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
-                    marginBottom: '12px'
-                  }}
-                  open
+                <div
+                  className={'mb-2 rounded-xl border-[0.5px] border-black/[0.08] shadow-sm transition-all duration-200 bg-white py-2 px-3'}
                 >
-                  <summary
-                    style={{
-                      cursor: 'pointer',
-                      fontWeight: 500,
-                      color: '#374151'
-                    }}
-                  >
-                    {think.summary}
-                    {!think.isComplete && isResponding && (
-                      <span className="inline-flex ml-2">
-                        <LoadingAnim type='text' />
-                      </span>
+                  <div className="flex items-center h-[18px] cursor-pointer  rounded-md px-1">
+                    {isResponding ? (
+                      <Loading02 className='shrink-0 mr-1 w-3 h-3 text-[#667085] animate-spin' />
+                    ) : (
+                      <CheckCircle className='shrink-0 mr-1 w-3 h-3 text-[#12B76A]' />
                     )}
-                  </summary>
-                  {think.content && (
-                    <div style={{ marginTop: '8px' }}>
-                      <Markdown content={think.content} />
+                    <div className="grow text-xs font-semibold text-gray-800 leading-[18px]">
+                      {think.summary}
                     </div>
-                  )}
-                </details>
+
+                  </div>
+                  <div className="mt-1.5">
+                    {think.content && (
+                      <div className="text-sm text-gray-700">
+                        <Markdown content={think.content} />
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
 
               {(isResponding && (isAgentMode ? (!content && (agent_thoughts || []).filter(item => !!item.thought || !!item.tool).length === 0) : !content))
