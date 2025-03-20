@@ -237,7 +237,7 @@ const Answer: FC<IAnswerProps> = ({
                     <Markdown content={displayContent} />
                   ))}
               {message_header && message_header.length > 0 && !isResponding ? (
-                <div className="space-x-2">
+                <div className="space-x-3 py-2">
                   {message_header.map((headerItem, index) => {
                     const isHighlighted = nextQuestionContent === headerItem.suggestion
                     return (
