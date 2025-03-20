@@ -17,6 +17,7 @@ import type { Emoji } from '@/types/tools'
 import { parseMessage } from './parse-header'
 import Button from '../../base/button'
 import classNames from 'classnames'
+import Toast from '../../base/toast'
 
 const OperationBtn = ({ innerContent, onClick, className }: { innerContent: React.ReactNode; onClick?: () => void; className?: string }) => (
   <div
@@ -36,6 +37,14 @@ const OpeningStatementIcon: FC<{ className?: string }> = ({ className }) => (
 
 const RatingIcon: FC<{ isLike: boolean }> = ({ isLike }) => {
   return isLike ? <HandThumbUpIcon className='w-4 h-4' /> : <HandThumbDownIcon className='w-4 h-4' />
+}
+
+const CopyIcon: FC = () => {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5.33333 5.33333V3.33333C5.33333 2.59695 5.93028 2 6.66667 2H12.6667C13.403 2 14 2.59695 14 3.33333V9.33333C14 10.0697 13.403 10.6667 12.6667 10.6667H10.6667M3.33333 14H9.33333C10.0697 14 10.6667 13.403 10.6667 12.6667V6.66667C10.6667 5.93028 10.0697 5.33333 9.33333 5.33333H3.33333C2.59695 5.33333 2 5.93028 2 6.66667V12.6667C2 13.403 2.59695 14 3.33333 14Z" stroke="#6B7280" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
 }
 
 const EditIcon: FC<{ className?: string }> = ({ className }) => {
@@ -82,8 +91,23 @@ const Answer: FC<IAnswerProps> = ({
   const { id, content, feedback, agent_thoughts, workflowProcess } = item
   const isAgentMode = !!agent_thoughts && agent_thoughts.length > 0
 
+  const { notify } = Toast
   const { displayContent, message_header, think } = parseMessage(content || '')
-  const { t } = useTranslation()
+
+
+  // 添加复制功能
+  const handleCopy = async () => {
+    try {
+      const textToCopy = isAgentMode
+        ? agent_thoughts?.map(item => `${item.thought || ''} ${item.observation || ''}`).join('\n')
+        : displayContent
+
+      await navigator.clipboard.writeText(textToCopy || '')
+      notify({ type: 'success', message: '已复制' })
+    } catch (err) {
+      notify({ type: 'error', message: '复制失败' })
+    }
+  }
 
   /**
  * Render feedback results (distinguish between users and administrators)
@@ -102,7 +126,7 @@ const Answer: FC<IAnswerProps> = ({
     return (
       <Tooltip
         selector={`user-feedback-${randomString(16)}`}
-        content={isLike ? '取消赞同' : '取消反对'}
+        content='取消'
       >
         <div
           className={'relative box-border flex items-center justify-center h-7 w-7 p-0.5 rounded-lg bg-white cursor-pointer text-gray-500 hover:text-gray-800'}
@@ -128,10 +152,13 @@ const Answer: FC<IAnswerProps> = ({
       return feedback?.rating
         ? null
         : <div className='flex gap-1'>
-          <Tooltip selector={`user-feedback-${randomString(16)}`} content={t('common.operation.like') as string}>
+          <Tooltip selector={`user-feedback-${randomString(16)}`} content={'复制'}>
+            {OperationBtn({ innerContent: <IconWrapper><CopyIcon /></IconWrapper>, onClick: () => handleCopy() })}
+          </Tooltip>
+          <Tooltip selector={`user-feedback-${randomString(16)}`} content={'有帮助'}>
             {OperationBtn({ innerContent: <IconWrapper><RatingIcon isLike={true} /></IconWrapper>, onClick: () => onFeedback?.(id, { rating: 'like' }) })}
           </Tooltip>
-          <Tooltip selector={`user-feedback-${randomString(16)}`} content={t('common.operation.dislike') as string}>
+          <Tooltip selector={`user-feedback-${randomString(16)}`} content={'无效回答'}>
             {OperationBtn({ innerContent: <IconWrapper><RatingIcon isLike={false} /></IconWrapper>, onClick: () => onFeedback?.(id, { rating: 'dislike' }) })}
           </Tooltip>
         </div>
