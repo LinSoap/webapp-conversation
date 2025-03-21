@@ -7,7 +7,8 @@ export const parseMessage = (rawContent: string) => {
   const headerRegex = /<messageHeader>\s*([\s\S]*?)\s*<\/messageHeader>/;
   const thinkRegexComplete = /<details[^>]*>\s*<summary>\s*([^<]*)<\/summary>([\s\S]*?)<\/details>/;
   const thinkRegexPartial = /<details[^>]*>\s*<summary>\s*([^<]*)<\/summary>([\s\S]*)$/; // 未闭合的 think
-  const responseRegex = /<response>([\s\S]*?)<\/response>/g; // 使用全局匹配以移除所有 response 标签
+  const responseRegexComplete = /<response>([\s\S]*?)<\/response>/;
+  const responseRegexPartial = /<response>([\s\S]*)$/; // 未闭合的 response
 
   let message_header: MessageHeader[] = [];
   let think: { summary: string; content: string; isComplete: boolean } | null = null;
@@ -58,8 +59,19 @@ export const parseMessage = (rawContent: string) => {
     }
   }
 
-  // 直接移除所有 <response> 标签并保留其内容
-  displayContent = displayContent.replace(responseRegex, '$1').trim();
+  // 解析 response 并直接合并到 displayContent
+  let responseContent = '';
+  const responseMatchComplete = rawContent.match(responseRegexComplete);
+  if (responseMatchComplete) {
+    responseContent = responseMatchComplete[1].trim();
+    displayContent = displayContent.replace(responseRegexComplete, responseContent).trim();
+  } else {
+    const responseMatchPartial = rawContent.match(responseRegexPartial);
+    if (responseMatchPartial) {
+      responseContent = responseMatchPartial[1].trim();
+      displayContent = displayContent.replace(responseRegexPartial, responseContent).trim();
+    }
+  }
 
-  return { displayContent, message_header, think };
+  return { displayContent: displayContent.trim(), message_header, think };
 };

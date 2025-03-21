@@ -97,6 +97,7 @@ const Answer: FC<IAnswerProps> = ({
   const { displayContent, message_header, think } = parseMessage(content || '')
 
 
+
   // 添加复制功能
   const handleCopy = async () => {
     try {
@@ -205,61 +206,67 @@ const Answer: FC<IAnswerProps> = ({
     <div key={id}>
       <div className='flex items-start'>
         <div className={`${s.answerIcon} w-10 h-10 shrink-0`}>
-          {isResponding
-            && <div className={s.typeingIcon}>
+          {isResponding && (
+            <div className={s.typeingIcon}>
               <LoadingAnim type='avatar' />
             </div>
-          }
+          )}
         </div>
         <div className={`${s.answerWrap}`}>
           <div className={`${s.answer} relative text-sm text-gray-900`}>
             <div className={`ml-2 py-3 px-4 bg-gray-100 rounded-tr-2xl rounded-b-2xl ${workflowProcess && 'min-w-[480px]'}`}>
-              {workflowProcess && (
-                <WorkflowProcess data={workflowProcess} hideInfo />
-              )}
+              {workflowProcess && <WorkflowProcess data={workflowProcess} hideInfo />}
 
-              {/* 美化后的 Think 部分 */}
+              {/* 渲染 Think 部分 */}
               {think && (
-                <div
-                  className={'mb-2 rounded-xl border-[0.5px] border-black/[0.08] shadow-sm transition-all duration-200 bg-white py-2 px-3'}
+                <details
+                  style={{
+                    color: '#4B5E6D',
+                    backgroundColor: '#F9FAFB',
+                    padding: '12px',
+                    borderRadius: '6px',
+                    border: '1px solid #E5E7EB',
+                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+                    marginBottom: '12px',
+                  }}
+                  open
                 >
-                  <div className="flex items-center h-[18px] cursor-pointer  rounded-md px-1">
-                    {isResponding ? (
-                      <Loading02 className='shrink-0 mr-1 w-3 h-3 text-[#667085] animate-spin' />
-                    ) : (
-                      <CheckCircle className='shrink-0 mr-1 w-3 h-3 text-[#12B76A]' />
+                  <summary
+                    style={{
+                      cursor: 'pointer',
+                      fontWeight: 500,
+                      color: '#374151',
+                    }}
+                  >
+                    {think.summary}
+                    {!think.isComplete && isResponding && (
+                      <span className="inline-flex ml-2">
+                        <LoadingAnim type='text' />
+                      </span>
                     )}
-                    <div className="grow text-xs font-semibold text-gray-800 leading-[18px]">
-                      {think.summary}
+                  </summary>
+                  {think.content && (
+                    <div style={{ marginTop: '8px' }}>
+                      <Markdown content={think.content} />
                     </div>
-
-                  </div>
-                  <div className="mt-1.5">
-                    {think.content && (
-                      <div className="text-sm text-gray-700">
-                        <Markdown content={think.content} />
-                      </div>
-                    )}
-                  </div>
-                </div>
+                  )}
+                </details>
               )}
 
-              {(isResponding && (isAgentMode ? (!content && (agent_thoughts || []).filter(item => !!item.thought || !!item.tool).length === 0) : !content))
-                ? (
-                  <div className='flex flex-row items-center h-5'>
-                    <p className='pr-3'>思考中</p>
-                    <LoadingAnim type='text' />
-                  </div>
-                )
-                : (isAgentMode
-                  ? agentModeAnswer
-                  : (
-                    <Markdown content={displayContent} />
-                  ))}
-              {message_header && message_header.length > 0 && !isResponding ? (
-                <div className="space-x-3 py-2">
+              {/* 渲染主要内容：直接使用 displayContent */}
+              {(isResponding && !think && !displayContent) ? (
+                <div className='flex items-center justify-center w-6 h-5'>
+                  <LoadingAnim type='text' />
+                </div>
+              ) : (
+                <Markdown content={displayContent} />
+              )}
+
+              {/* 渲染 message_header */}
+              {message_header && message_header.length > 0 && !isResponding && (
+                <div className="space-x-2 mt-2">
                   {message_header.map((headerItem, index) => {
-                    const isHighlighted = nextQuestionContent === headerItem.suggestion
+                    const isHighlighted = nextQuestionContent === headerItem.suggestion;
                     return (
                       <Button
                         key={index}
@@ -274,10 +281,10 @@ const Answer: FC<IAnswerProps> = ({
                       >
                         {headerItem.suggestion}
                       </Button>
-                    )
+                    );
                   })}
                 </div>
-              ) : null}
+              )}
             </div>
             <div className='absolute top-[-14px] right-[-14px] flex flex-row justify-end gap-1'>
               {!feedbackDisabled && !item.feedbackDisabled && renderItemOperation()}
@@ -287,6 +294,6 @@ const Answer: FC<IAnswerProps> = ({
         </div>
       </div>
     </div>
-  )
+  );
 }
 export default React.memo(Answer)
