@@ -4,7 +4,8 @@ export type MessageHeader = {
 };
 
 export const parseMessage = (rawContent: string) => {
-  const headerRegex = /<messageHeader>\s*([\s\S]*?)\s*<\/messageHeader>/;
+  const headerRegexComplete = /<messageHeader>\s*([\s\S]*?)\s*<\/messageHeader>/;
+  const headerRegexPartial = /<messageHeader>\s*([\s\S]*)$/; // 未闭合的 messageHeader
   const thinkRegexComplete = /<details[^>]*>\s*<summary>\s*([^<]*)<\/summary>([\s\S]*?)<\/details>/;
   const thinkRegexPartial = /<details[^>]*>\s*<summary>\s*([^<]*)<\/summary>([\s\S]*)$/; // 未闭合的 think
   const responseRegexComplete = /<response>([\s\S]*?)<\/response>/;
@@ -15,9 +16,10 @@ export const parseMessage = (rawContent: string) => {
   let displayContent = rawContent;
 
   // 解析 messageHeader
-  const headerMatch = rawContent.match(headerRegex);
-  if (headerMatch) {
-    const headerContent = headerMatch[1].trim();
+  const headerMatchComplete = rawContent.match(headerRegexComplete);
+  if (headerMatchComplete) {
+    // 完整闭合的 messageHeader
+    const headerContent = headerMatchComplete[1].trim();
     try {
       message_header = JSON.parse(headerContent);
       if (!Array.isArray(message_header)) {
@@ -35,11 +37,20 @@ export const parseMessage = (rawContent: string) => {
       console.error('Failed to parse messageHeader as JSON:', error);
       message_header = [];
     }
-    displayContent = displayContent.replace(headerRegex, '').trim();
+    // 移除完整闭合的 messageHeader 文本
+    displayContent = displayContent.replace(headerRegexComplete, '').trim();
+  } else {
+    // 检查未闭合的 messageHeader
+    const headerMatchPartial = rawContent.match(headerRegexPartial);
+    if (headerMatchPartial) {
+      // 未闭合时，移除从 <messageHeader> 开始的所有内容，避免展示
+      displayContent = displayContent.replace(headerRegexPartial, '').trim();
+      message_header = []; // 未闭合时不解析
+    }
   }
 
-  // 解析 think
-  const thinkMatchComplete = rawContent.match(thinkRegexComplete);
+  // 解析 think 部分
+  const thinkMatchComplete = displayContent.match(thinkRegexComplete);
   if (thinkMatchComplete) {
     think = {
       summary: thinkMatchComplete[1].trim(),
@@ -48,7 +59,7 @@ export const parseMessage = (rawContent: string) => {
     };
     displayContent = displayContent.replace(thinkRegexComplete, '').trim();
   } else {
-    const thinkMatchPartial = rawContent.match(thinkRegexPartial);
+    const thinkMatchPartial = displayContent.match(thinkRegexPartial);
     if (thinkMatchPartial) {
       think = {
         summary: thinkMatchPartial[1].trim(),
@@ -59,14 +70,14 @@ export const parseMessage = (rawContent: string) => {
     }
   }
 
-  // 解析 response 并直接合并到 displayContent
+  // 解析 response 并合并到 displayContent
   let responseContent = '';
-  const responseMatchComplete = rawContent.match(responseRegexComplete);
+  const responseMatchComplete = displayContent.match(responseRegexComplete);
   if (responseMatchComplete) {
     responseContent = responseMatchComplete[1].trim();
     displayContent = displayContent.replace(responseRegexComplete, responseContent).trim();
   } else {
-    const responseMatchPartial = rawContent.match(responseRegexPartial);
+    const responseMatchPartial = displayContent.match(responseRegexPartial);
     if (responseMatchPartial) {
       responseContent = responseMatchPartial[1].trim();
       displayContent = displayContent.replace(responseRegexPartial, responseContent).trim();
