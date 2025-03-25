@@ -1,5 +1,6 @@
 export type MessageHeader = {
-  suggestion: string;
+  suggestion?: string;
+  numberInput?: string; // 用于输入框的可选字段，表示输入框的标签或用途
   [key: string]: any; // 支持其他可能的字段
 };
 
@@ -26,9 +27,6 @@ export const parseMessage = (rawContent: string) => {
         throw new Error('Suggestions must be an array');
       }
       message_header.forEach((item) => {
-        if (!item.suggestion) {
-          throw new Error('Each suggestion must have a "suggestion" field');
-        }
         if (item.inputs && typeof item.inputs !== 'object') {
           throw new Error('Inputs must be an object');
         }

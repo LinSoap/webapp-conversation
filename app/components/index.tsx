@@ -128,9 +128,10 @@ const Main: FC<IMainProps> = () => {
     if (!isNewConversation && !conversationIdChangeBecauseOfNew && !isResponding) {
       fetchChatList(currConversationId).then((res: any) => {
         const { data } = res
+
         const newChatList: ChatItem[] = generateNewChatListWithOpenStatement(notSyncToStateIntroduction, notSyncToStateInputs)
 
-        data.forEach((item: any) => {
+        data.reverse().forEach((item: any) => {
           newChatList.push({
             id: `question-${item.id}`,
             content: item.query,

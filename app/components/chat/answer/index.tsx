@@ -20,6 +20,7 @@ import classNames from 'classnames'
 import Toast from '../../base/toast'
 import CheckCircle from '@/app/components/base/icons/solid/general/check-circle'
 import Loading02 from '../../base/icons/line/loading-02'
+import MessageHeaderRenderer from './message-header'
 
 const OperationBtn = ({ innerContent, onClick, className }: { innerContent: React.ReactNode; onClick?: () => void; className?: string }) => (
   <div
@@ -263,28 +264,13 @@ const Answer: FC<IAnswerProps> = ({
               )}
 
               {/* 渲染 message_header */}
-              {message_header && message_header.length > 0 && !isResponding && (
-                <div className="space-x-2 mt-2">
-                  {message_header.map((headerItem, index) => {
-                    const isHighlighted = nextQuestionContent === headerItem.suggestion;
-                    return (
-                      <Button
-                        key={index}
-                        onClick={() => onSend(headerItem.suggestion, [])}
-                        className={classNames(
-                          'inline-flex items-center px-3 py-1 text-sm',
-                          isHighlighted
-                            ? 'bg-primary-100 text-primary-600 border-primary-200'
-                            : 'bg-gray-100 text-gray-700 border-gray-200'
-                        )}
-                        disabled={!isLast}
-                      >
-                        {headerItem.suggestion}
-                      </Button>
-                    );
-                  })}
-                </div>
-              )}
+              <MessageHeaderRenderer
+                message_header={message_header}
+                nextQuestionContent={nextQuestionContent} // 为空时显示所有
+                isResponding={false}
+                isLast={true}
+                onSend={onSend}
+              />
             </div>
             <div className='absolute top-[-14px] right-[-14px] flex flex-row justify-end gap-1'>
               {!feedbackDisabled && !item.feedbackDisabled && renderItemOperation()}
