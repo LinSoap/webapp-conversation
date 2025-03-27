@@ -492,7 +492,6 @@ const Main: FC<IMainProps> = () => {
         })
       },
       onMessageEnd: (messageEnd) => {
-        console.log("MessageEnd")
         if (messageEnd.metadata?.annotation_reply) {
           responseItem.id = messageEnd.id
           responseItem.annotation = ({
@@ -512,10 +511,8 @@ const Main: FC<IMainProps> = () => {
           setChatList(newListWithAnswer)
           return
         }
-        // not support show citation
-        if (messageEnd.metadata?.retriever_resources) {
+        if (messageEnd.metadata?.retriever_resources && messageEnd.metadata.retriever_resources.length > 0) {
           responseItem.citation = messageEnd.metadata.retriever_resources
-          console.log("citation yes")
         }
         const newListWithAnswer = produce(
           getChatList().filter(item => item.id !== responseItem.id && item.id !== placeholderAnswerId),
