@@ -62,49 +62,49 @@ const MessageHeaderRenderer = ({
                             return headerItem.suggestion && nextQuestionContent === headerItem.suggestion;
                         })
                         .map((headerItem, index) => {
-                            // if (headerItem.numberInput) {
-                            //     // 渲染输入框
-                            //     const label = headerItem.numberInput;
-                            //     return (
-                            //         <div key={index} className="inline-flex items-center space-x-2">
-                            //             <label>{label}:</label>
-                            //             <input
-                            //                 type="text"
-                            //                 value={inputValues[index] || ''}
-                            //                 onChange={(e) => handleInputChange(index, e.target.value)}
-                            //                 placeholder="请输入一个正数金额"
-                            //                 className="px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary-500"
-                            //                 disabled={!isLast}
-                            //             />
-                            //             <Button
-                            //                 onClick={() => handleInputSubmit(index)}
-                            //                 className="px-3 py-1 text-sm bg-primary-100  text-primary-600"
-                            //                 disabled={!isLast || !inputValues[index]}
-                            //             >
-                            //                 提交
-                            //             </Button>
-                            //         </div>
-                            //     );
-                            // } else 
-                            if (headerItem.suggestion) {
-                                // 渲染按钮
-                                const isHighlighted = nextQuestionContent === headerItem.suggestion;
+                            if (headerItem.numberInput) {
+                                // 渲染输入框
+                                const label = headerItem.numberInput;
                                 return (
-                                    <Button
-                                        key={index}
-                                        onClick={() => onSend(headerItem.suggestion!, [])} // 使用 ! 断言 suggestion 非空
-                                        className={classNames(
-                                            'inline-flex items-center px-3 py-1 text-sm',
-                                            isHighlighted
-                                                ? 'bg-primary-100 text-primary-600 border-primary-200'
-                                                : 'bg-gray-100 text-gray-700 border-gray-200'
-                                        )}
-                                        disabled={!isLast}
-                                    >
-                                        {headerItem.suggestion}
-                                    </Button>
+                                    <div key={index} className="inline-flex items-center space-x-2">
+                                        <label>{label}:</label>
+                                        <input
+                                            type="text"
+                                            value={inputValues[index] || ''}
+                                            onChange={(e) => handleInputChange(index, e.target.value)}
+                                            placeholder="请输入一个正数金额"
+                                            className="px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary-500"
+                                            disabled={!isLast}
+                                        />
+                                        <Button
+                                            onClick={() => handleInputSubmit(index)}
+                                            className="px-3 py-1 text-sm bg-primary-100  text-primary-600"
+                                            disabled={!isLast || !inputValues[index]}
+                                        >
+                                            提交
+                                        </Button>
+                                    </div>
                                 );
-                            }
+                            } else
+                                if (headerItem.suggestion) {
+                                    // 渲染按钮
+                                    const isHighlighted = nextQuestionContent === headerItem.suggestion;
+                                    return (
+                                        <Button
+                                            key={index}
+                                            onClick={() => onSend(headerItem.suggestion!, [])} // 使用 ! 断言 suggestion 非空
+                                            className={classNames(
+                                                'inline-flex items-center px-3 py-1 text-sm mb-2',
+                                                isHighlighted
+                                                    ? 'bg-primary-100 text-primary-600 border-primary-200'
+                                                    : 'bg-gray-100 text-gray-700 border-gray-200'
+                                            )}
+                                            disabled={!isLast}
+                                        >
+                                            {headerItem.suggestion}
+                                        </Button>
+                                    );
+                                }
                             return null;
                         })}
                 </div>

@@ -1,6 +1,6 @@
 import type { Annotation } from './log'
 import type { Locale } from '@/i18n'
-import type { ThoughtItem } from '@/app/components/chat/type'
+import type { CitationItem, ThoughtItem } from '@/app/components/chat/type'
 
 export type PromptVariable = {
   key: string
@@ -58,6 +58,7 @@ export type MessageMore = {
 export type IChatItem = {
   id: string
   content: string
+  citation?: CitationItem[]
   /**
    * Specific message type
    */

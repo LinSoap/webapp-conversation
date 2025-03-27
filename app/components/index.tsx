@@ -142,6 +142,7 @@ const Main: FC<IMainProps> = () => {
           newChatList.push({
             id: item.id,
             content: item.answer,
+            citation: item.citation,
             agent_thoughts: addFileInfos(item.agent_thoughts ? sortAgentSorts(item.agent_thoughts) : item.agent_thoughts, item.message_files),
             feedback: item.feedback,
             isAnswer: true,
@@ -491,6 +492,7 @@ const Main: FC<IMainProps> = () => {
         })
       },
       onMessageEnd: (messageEnd) => {
+        console.log("MessageEnd")
         if (messageEnd.metadata?.annotation_reply) {
           responseItem.id = messageEnd.id
           responseItem.annotation = ({
@@ -511,7 +513,10 @@ const Main: FC<IMainProps> = () => {
           return
         }
         // not support show citation
-        // responseItem.citation = messageEnd.retriever_resources
+        if (messageEnd.metadata?.retriever_resources) {
+          responseItem.citation = messageEnd.metadata.retriever_resources
+          console.log("citation yes")
+        }
         const newListWithAnswer = produce(
           getChatList().filter(item => item.id !== responseItem.id && item.id !== placeholderAnswerId),
           (draft) => {

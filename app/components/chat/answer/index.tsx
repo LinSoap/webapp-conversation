@@ -4,7 +4,7 @@ import React from 'react'
 import { HandThumbDownIcon, HandThumbUpIcon } from '@heroicons/react/24/outline'
 import cn from 'classnames'
 import LoadingAnim from '../loading-anim'
-import type { FeedbackFunc } from '../type'
+import type { CitationItem, FeedbackFunc } from '../type'
 import s from '../style.module.css'
 import ImageGallery from '../../base/image-gallery'
 import Thought from '../thought'
@@ -21,6 +21,7 @@ import Toast from '../../base/toast'
 import CheckCircle from '@/app/components/base/icons/solid/general/check-circle'
 import Loading02 from '../../base/icons/line/loading-02'
 import MessageHeaderRenderer from './message-header'
+import Citation from '../../base/citation'
 
 const OperationBtn = ({ innerContent, onClick, className }: { innerContent: React.ReactNode; onClick?: () => void; className?: string }) => (
   <div
@@ -91,7 +92,17 @@ const Answer: FC<IAnswerProps> = ({
   isLast,
   nextQuestionContent = ''
 }) => {
-  const { id, content, feedback, agent_thoughts, workflowProcess } = item
+  const { id, content, citation, feedback, agent_thoughts, workflowProcess } = item
+  const cachedCitationRaw = localStorage.getItem(`citation_${id}`);
+  const cachedCitation = cachedCitationRaw ? JSON.parse(cachedCitationRaw) : null;
+
+  // 如果有新的citation，更新缓存
+  if (citation) {
+    localStorage.setItem(`citation_${id}`, JSON.stringify(citation));
+  }
+
+  // 使用缓存中的citation（如果存在）或当前citation
+  const finalCitation = cachedCitation || citation;
   const isAgentMode = !!agent_thoughts && agent_thoughts.length > 0
 
   const { notify } = Toast
@@ -271,6 +282,12 @@ const Answer: FC<IAnswerProps> = ({
                 isLast={true}
                 onSend={onSend}
               />
+              {
+                (finalCitation) ? (
+                  <Citation data={finalCitation} />
+                ) :
+                  null
+              }
             </div>
             <div className='absolute top-[-14px] right-[-14px] flex flex-row justify-end gap-1'>
               {!feedbackDisabled && !item.feedbackDisabled && renderItemOperation()}
