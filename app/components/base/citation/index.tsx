@@ -85,23 +85,32 @@ const Citation: FC<CitationProps> = ({
               </span>
             </div>
 
-            {/* 展开内容 */}
+            {/* 展开内容  */}
             {expandedItems.has(resource.documentId) && (
-              <div className="mt-2 ml-6 p-4 bg-white rounded-lg border border-gray-200 shadow-sm animate-fade-in">
+              <div className="mt-3 ml-6 p-4 bg-white rounded-xl border border-gray-100 shadow-md animate-fade-in">
                 {resource.sources.map((source, idx) => (
-                  <div key={source.segment_id} className="mb-4 last:mb-0">
-                    <div className="flex items-baseline space-x-2">
-                      <span className="text-base font-semibold text-gray-900">
-                        片段 {idx + 1}:
-                      </span>
-                      {showHitInfo && (
-                        <div className="text-xs text-gray-500 font-medium">
-                          <span>命中次数: {source.hit_count}</span>
-                          <span className="ml-3">字数: {source.word_count}</span>
-                        </div>
-                      )}
+                  <div
+                    key={source.segment_id}
+                    className="mb-4 last:mb-0 border-b border-gray-100 last:border-0 pb-4 last:pb-0"
+                  >
+                    {/* 片段标题和信息 */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-baseline space-x-2">
+                        <span className="text-base font-semibold text-gray-900 tracking-tight">
+                          引用 {idx + 1}
+                        </span>
+                      </div>
+                      {/* 可选：添加复制按钮 */}
+                      <button
+                        className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                        onClick={() => navigator.clipboard.writeText(source.content)}
+                      >
+                        复制
+                      </button>
                     </div>
-                    <p className="mt-2 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+
+                    {/* 正文内容 */}
+                    <p className="mt-3 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap bg-gray-50 p-3 rounded-lg border border-gray-200">
                       {source.content}
                     </p>
                   </div>
